@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <style>
+        
+        canvas{
+            position:absolute;
+            left:8px;
+            top:8px;
+            border:1px solid #000000;
+        }
+        
+        </style>
+    </head>
+    
+    <body>
+        <div id='divUsername'>
+            <form id='formUsername'>
+                Username: <input id='inputUsername' type='text'></input><br>
+                <p id='textResult'></p><br>
+                <button id='btnUsername'>Sign In</button>
+            </form>
+        </div>
+        
+        
+        <div id='divGame' style='display:none'>
+            <canvas id='cnv' width='800' height='800'></canvas>
+            <canvas id='cnv-ui' width='800' height='800'></canvas>
+            
+            <div id='chat-text' style='width: 500px; margin-top: 800px; overflow-y: scroll'>
+                <div>Welcome to chat!</div>
+            </div>
+            
+            <form id='chat-form'>
+                <input id='chat-input' type='text' style='width: 500px'></input>
+            </form>
+        </div>
+    </body>
+    <script src='https://cdn.socket.io/socket.io-1.4.5.js'></script>
+    <script type='text/javascript'>
+        
+        let canvas = document.getElementById('cnv');
+        let canvas_ui = document.getElementById('cnv-ui');
+        
+        const W = canvas.width;
+        const H = canvas.height;
+        
+        let c = canvas.getContext('2d');
+        let ui = canvas_ui.getContext('2d'); 
+        ui.font = '30px Antic';
+        
+        let selfId = null;
+        let socket = io();
+        
+        function Player(initPack){
+            this.id = initPack.id;
+            this.username = initPack.username;
+            
+            this.x = initPack.x;
+            this.y = initPack.y;
+            this.s = 30;
+            this.col = initPack.col;
+            
+            this.draw = function(){
+                c.beginPath();
+                c.fillStyle = this.col;
+                c.strokeStyle = 'black';
+                c.rect(this.x,this.y,this.s,this.s);
+                c.fill();
+                c.stroke();
+                c.closePath();
+                
+                c.beginPath();
+                c.fillStyle = 'black';
+                c.font = '15px Antic';
+                c.textAlign = 'center';
+                c.textBaseline = 'middle';
+                c.fillText(this.username,this.x + this.s/2, this.y - this.s / 3);
+                c.closePath();
+            }
+            Player.list[this.id] = this;
+        }
+        Player.list = {};
+        
+        Player.drawAll = function(){
+            for (let p in Player.list){
+                Player.list[p].draw();
+            }
+        }
+        
+        function signIn(){
+            
+            socket.on('init', function(packs){
+                if (packs.selfId){
+                    selfId = packs.selfId;
+                }
+                
+                for (let pack of packs.players){
+                    new Player(pack);
+                }
+            });
+            
+            socket.on('update', function(packs){
+                for (let pack of packs.players){
+                    let p = Player.list[pack.id];
+                    if (p){
+                        if (pack.x !== undefined){
+                            p.x = pack.x;
+                        }
+                        if (pack.y !== undefined){
+                            p.y = pack.y;
+                        }
+                    }
+                }
+            });
+            
+            socket.on('remove', function(packs){
+                for (let id of packs.players){
+                    delete Player.list[id];
+                }
+            });
+            
+            setInterval(function(){
+                if (!selfId){return;}
+                
+                c.clearRect(0,0,W,H);
+                Player.drawAll();
+                
+            },1000/60);
+            
+            
+            
+            document.onkeydown = function(event){
+                if(event.keyCode === 65){
+                    socket.emit('keyPress',{inputId: 'l',state:true});
+                }
+                if (event.keyCode === 68){
+                    socket.emit('keyPress',{inputId: 'r',state:true});
+                }
+                if(event.keyCode === 87){
+                    socket.emit('keyPress',{inputId: 'u',state:true});
+                }
+                if(event.keyCode === 83){
+                    socket.emit('keyPress',{inputId: 'd',state:true});
+                }
+                
+            }
+            document.onkeyup = function(event){
+                if(event.keyCode === 65){
+                    socket.emit('keyPress',{inputId: 'l',state:false});
+                }
+                if (event.keyCode === 68){
+                    socket.emit('keyPress',{inputId: 'r',state:false});
+                }
+                if(event.keyCode === 87){
+                    socket.emit('keyPress',{inputId: 'u',state:false});
+                }
+                if(event.keyCode === 83){
+                    socket.emit('keyPress',{inputId: 'd',state:false});
+                }
+            }
+        }
+        
+        
+        
+        
+        
+        
+        let divUsername = document.getElementById('divUsername');
+        let divGame = document.getElementById('divGame');
+        
+        let btnUsername = document.getElementById('btnUsername');
+        let inputUsername = document.getElementById('inputUsername');
+        let formUsername = document.getElementById('formUsername');
+        
+        let textResult = document.getElementById('textResult');
+        
+        btnUsername.onclick = function(){
+            socket.emit('signIn',{username: inputUsername.value});
+        }
+        formUsername.onsubmit = function(e){
+            e.preventDefault();
+            socket.emit('signIn',{username: inputUsername.value});
+        }
+        
+        socket.on('signInResponse', function(data){
+            textResult.innerHTML = data.message;
+            if (data.success){
+                divUsername.style.display = 'none';
+                divGame.style.display = 'inline-block';
+                signIn();
+            }
+            else{
+                inputUsername.value = '';
+            }
+        });
+        
+        let chatForm = document.getElementById('chat-form');
+        let chatInput = document.getElementById('chat-input');
+        let chatText = document.getElementById('chat-text');
+        
+        chatForm.onsubmit = function(e){
+            e.preventDefault();
+            if (chatInput.value === ''){return;}
+            socket.emit('chatMsgSend',{username: Player.list[selfId].username, message: chatInput.value});
+            chatInput.value = '';
+        }
+        
+        socket.on('chatMsgReceive', function(text){
+            const username = '<span id="chatUsername">' + text.username + '</span>';
+            const msg = ': ' + text.message;
+            chatText.innerHTML += '<div><p>' + username + msg + '</p></div>';
+        });
+        
+        document.oncontextmenu = function(e){
+            e.preventDefault();
+        }
+        
+    </script>
+</html>
