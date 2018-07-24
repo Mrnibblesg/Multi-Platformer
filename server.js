@@ -8,7 +8,6 @@ let con = mysql.createConnection({
 let mathUtils = require('./Utils/MathUtils');
 let collision = require('./Utils/CollisionUtils');
 
-
 let SOCKET_LIST = {};
 
 
@@ -16,7 +15,7 @@ let express = require('express');
 let app = express();
 let serv = require('http').Server(app);
 
-
+const DEBUG = false;
 const FPS = 60;
 
 let initPack = {players:[]};
@@ -33,17 +32,15 @@ io.sockets.on('connection', function(socket){
     
     
     socket.on('signIn', function(data){
-        
-        //turn into function call with callbacks
-        for (p in Player.list){
-            if (p.username === data.username){
-                socket.emit('signInResponse', {success: false, message: 'Username taken.'});
-                return;
+        console.log('sign in');
+        //turn into function call with callback
+        usernameCheck(data.username, function(result){
+            socket.emit('signInResponse', result);
+            
+            if (result.success){
+                Player.onConnect(socket,data.username);
             }
-        }
-        socket.emit('signInResponse', {success: true, message: 'Login successful.'});
-        Player.onConnect(socket,data.username);
-        
+        });
     });
     
     socket.on('chatMsgSend', function(text){
@@ -55,8 +52,8 @@ io.sockets.on('connection', function(socket){
     socket.on('disconnect',function(){
         delete SOCKET_LIST[socket.id];
         Player.onDisconnect(socket);
+        console.log('Client disconnected');
     });
-    
 });
 
 
@@ -72,6 +69,9 @@ function Player(params){
     this.username = params.username;
     this.x = Math.floor(mathUtils.rand(700,100));
     this.y = Math.floor(mathUtils.rand(700,100));
+    this.xVel = 0;
+    this.yVel = 0;
+    
     this.col = params.col;
     
     this.keysPressed = {
@@ -181,6 +181,14 @@ Player.onConnect = function(socket, username){
         }
     });
     
+    socket.on('eval', function(command){
+        if (DEBUG){
+            const result = eval(command);
+            console.log(result);
+            socket.emit('chatMsgReceive', {username: 'SERVER', message: result});
+        }
+    });
+    
     socket.emit('init',{
         selfId: socket.id,
         players: Player.getAllInitPack()
@@ -190,6 +198,30 @@ Player.onConnect = function(socket, username){
 Player.onDisconnect = function(socket){
     delete Player.list[socket.id];
     removePack.players.push(socket.id);
+}
+
+function usernameCheck(name, cb){
+    
+    let validCharacters = /^[a-z0-9_-]{3,15}$/gi
+    if (name.length > 15){
+        cb({success: false, message: 'Username is too long.'});
+    }
+    else if (name.length < 3){
+        cb({success: false, message: 'Username is too short.'});
+    }
+    else if (!validCharacters.test(name)){
+        cb({success: false, message: 'Username must only contain alphanumeric characters, underscores and hyphens.'});
+    }
+    else{
+        for (let id in Player.list){
+            if (Player.list[id].username === name){
+                cb({success: false, message: 'Username taken.'});
+                return;
+            }
+        }
+        cb({success: true, message: 'Signed in successfully'});
+        
+    }
 }
 
 
@@ -215,9 +247,9 @@ setInterval(function(){
 
 
 app.get('/',function(req, res) {
-	res.sendFile(__dirname + '/client/index.html');
+	res.sendFile(__dirname + '/html/index.html');
 });
-app.use('/client', express.static(__dirname + 'client'));
+app.use('/html', express.static(__dirname + 'html'));
 
 serv.listen(80);
 console.log('Server started.');

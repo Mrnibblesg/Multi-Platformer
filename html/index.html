@@ -176,15 +176,14 @@
         
         let textResult = document.getElementById('textResult');
         
-        btnUsername.onclick = function(){
-            socket.emit('signIn',{username: inputUsername.value});
-        }
-        formUsername.onsubmit = function(e){
+        
+        btnUsername.onclick = function(e){
             e.preventDefault();
             socket.emit('signIn',{username: inputUsername.value});
         }
         
         socket.on('signInResponse', function(data){
+            console.log('response');
             textResult.innerHTML = data.message;
             if (data.success){
                 divUsername.style.display = 'none';
@@ -203,7 +202,13 @@
         chatForm.onsubmit = function(e){
             e.preventDefault();
             if (chatInput.value === ''){return;}
-            socket.emit('chatMsgSend',{username: Player.list[selfId].username, message: chatInput.value});
+            if (chatInput.value[0] === '/'){
+                socket.emit('eval',chatInput.value.substring(1));
+            }
+            else{
+                socket.emit('chatMsgSend',{username: Player.list[selfId].username, message: chatInput.value});
+            }
+            
             chatInput.value = '';
         }
         
