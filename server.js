@@ -15,11 +15,17 @@ let express = require('express');
 let app = express();
 let serv = require('http').Server(app);
 
+
 const DEBUG = false;
 const FPS = 60;
 
-let initPack = {players:[]};
-let removePack = {players:[]};
+const GRAV = 0.6;
+
+const PLAYER_W = 30;
+const PLAYER_H = 30;
+
+let initPack = {players:[], platforms: []};
+let removePack = {players:[], platforms: []};
 
 
 let io = require('socket.io')(serv,{});
@@ -32,7 +38,6 @@ io.sockets.on('connection', function(socket){
     
     
     socket.on('signIn', function(data){
-        console.log('sign in');
         //turn into function call with callback
         usernameCheck(data.username, function(result){
             socket.emit('signInResponse', result);
@@ -62,15 +67,66 @@ function Entity(params){
     this.toRemove = false;
     this.id = params.id;
 }
+function Platform(params){
+    Entity.call(this,params);
+    this.x = params.x;
+    this.y = params.y;
+    this.w = params.w;
+    this.h = params.h;
+    
+    this.getInitPack = function(){
+        return {
+            id: this.id,
+            x: this.x,
+            y: this.y,
+            w: this.w,
+            h: this.h
+        };
+    }
+    
+    this.isColliding = function(rect){
+        return this.x < rect.x + rect.w &&
+		  this.x + this.w > rect.x &&
+		  this.y < rect.y + rect.h &&
+		  this.y + this.h > rect.y;
+    }
+    
+    Platform.list[this.id] = this;
+    initPack.platforms.push(this.getInitPack());
+}
+Platform.list = {};
+
+Platform.getAllInitPack = function(){
+    let initPack = [];
+    for (let id in Platform.list){
+        initPack.push(Platform.list[id].getInitPack());
+    }
+    return initPack;
+}
+
 
 function Player(params){
     Entity.call(this,params);
     
     this.username = params.username;
-    this.x = Math.floor(mathUtils.rand(700,100));
-    this.y = Math.floor(mathUtils.rand(700,100));
+    this.x = 385;
+    this.y = 650;
+    this.w = params.w;
+    this.h = params.h;
+    
+    this.prevX = this.x;
+    this.prevY = this.y;
+    
+    
+    this.accel = 3;
     this.xVel = 0;
+    this.maxXVel = 7;
+    
+    
+    this.canJump = false;
+    
     this.yVel = 0;
+    this.maxYVel = this.h - 1;
     
     this.col = params.col;
     
@@ -82,21 +138,100 @@ function Player(params){
     };
     
     this.update = function(){
+        this.updateMovement();
+        this.updateCollision();
+        
+    }
+    this.updateMovement = function(){
+        const isMoving = mathUtils.xor(this.keysPressed.left, this.keysPressed.right);
+        
+        this.prevX = this.x;
+        this.prevY = this.y;
+        
         if (this.keysPressed.left){
-            this.x -= 3;
+            this.xVel -= this.accel;
         }
         if (this.keysPressed.right){
-            this.x += 3;
+            this.xVel += this.accel;
         }
         if (this.keysPressed.up){
-            this.y -= 3;
+            this.jump();
         }
-        if (this.keysPressed.down){
-            this.y += 3;
+        
+        if (this.xVel > this.maxXVel){
+            this.xVel = this.maxXVel;
         }
+        else if (this.xVel < -this.maxXVel){
+            this.xVel = -this.maxXVel;
+        }
+        
+        this.x += this.xVel;
+        if (!isMoving){
+            this.xVel *= 0.7;
+            if (Math.abs(this.xVel) < 0.1){
+                this.xVel = 0;
+            }
+        }
+        //Update y velocity
+        this.yVel += GRAV;
+        
+        if (this.yVel > this.maxYVel){
+			this.yVel = this.maxYVel;
+		}
+        //Update y location
+        this.y += this.yVel;
         
     }
     
+    this.jump = function(){
+        if (this.canJump){
+            this.canJump = false;
+            this.yVel = -15;
+        }
+    }
+    
+    this.updateCollision = function(){
+        this.canJump = false;
+        for (let id in Platform.list){
+            const plat = Platform.list[id];
+            if (!plat.isColliding(this)){
+                continue;
+            }
+            //Top collision
+            if (this.prevY < plat.y &&
+              this.prevX + this.w > plat.x &&
+              this.prevX < plat.x + plat.w){
+                  
+                this.y = plat.y - this.h;
+                this.yVel = 0;
+                this.canJump = true;
+            }
+            //Bottom collision
+            else if(this.prevY > plat.y + plat.h &&
+              this.prevX + this.w > plat.x &&
+              this.prevX < plat.x + plat.w){
+                  
+                this.y = plat.y + plat.h;
+                this.yVel = 0;
+            }
+            //Left collision
+            else if (this.prevX < plat.x &&
+              this.prevY + this.h > plat.y &&
+              this.prevY < plat.y + plat.h){
+                  
+                this.x = plat.x - this.w;
+                this.xVel = 0;
+            }
+            //Right collision
+            else if(this.prevX + this.w > plat.x + plat.w &&
+              this.prevY + this.h > plat.y &&
+              this.prevY < plat.y + plat.h){
+                  
+                this.x = plat.x + plat.w;
+                this.xVel = 0;
+            }
+        }
+    }
     
     this.getInitPack = function(){
         return {
@@ -104,6 +239,8 @@ function Player(params){
             id: this.id,
             x: this.x,
             y: this.y,
+            w: this.w,
+            h: this.h,
             col: this.col
         };
     };
@@ -161,6 +298,8 @@ Player.onConnect = function(socket, username){
     let plr = new Player({
         username: username,
         id: socket.id,
+        w: PLAYER_W,
+        h: PLAYER_H,
         col: mathUtils.chooseRand(colors)
     });
     
@@ -188,10 +327,10 @@ Player.onConnect = function(socket, username){
             socket.emit('chatMsgReceive', {username: 'SERVER', message: result});
         }
     });
-    
     socket.emit('init',{
         selfId: socket.id,
-        players: Player.getAllInitPack()
+        players: Player.getAllInitPack(),
+        platforms: Platform.getAllInitPack()
     });
 }
 
@@ -223,6 +362,47 @@ function usernameCheck(name, cb){
         
     }
 }
+
+
+(function(){
+    new Platform({
+        id: Math.random(),
+        x: -1000,
+        y: 700,
+        w: 2800,
+        h: 50
+    });
+    new Platform({
+        id: Math.random(),
+        x: 50,
+        y: 600,
+        w: 100,
+        h: 50
+    });
+    new Platform({
+        id: Math.random(),
+        x: 600,
+        y: 600,
+        w: 100,
+        h: 50
+    });
+    new Platform({
+        id: Math.random(),
+        x: 200,
+        y: 325,
+        w: 100,
+        h: 50
+    });
+    new Platform({
+        id: Math.random(),
+        x: 300,
+        y: 425,
+        w: 200,
+        h: 50
+    });
+    
+})();
+
 
 
 setInterval(function(){

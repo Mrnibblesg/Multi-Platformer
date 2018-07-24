@@ -40,6 +40,9 @@ module.exports = {
     scale: function(val, oldmin,oldmax, newmin,newmax){
         const ratio = (val-oldmin) / (oldmax-oldmin);
         return ratio * (newmax-newmin) + newmin;
+    },
+    xor: function(a,b){
+        return !(a === b);
     }
 }
 

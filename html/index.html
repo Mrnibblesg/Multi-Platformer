@@ -53,20 +53,48 @@
         let selfId = null;
         let socket = io();
         
+        function Platform(initPack){
+            this.id = initPack.id;
+            this.x = initPack.x;
+            this.y = initPack.y;
+            this.w = initPack.w;
+            this.h = initPack.h;
+            this.col = 'black';
+            
+            this.draw = function(){
+                c.beginPath();
+                c.fillStyle = this.col;
+                c.strokeStyle = 'white';
+                c.rect(this.x,this.y,this.w,this.h);
+                c.fill();
+                c.stroke();
+                c.closePath();
+            }
+            Platform.list[this.id] = this;
+        }
+        Platform.list = {};
+        Platform.drawAll = function(){
+            for (let id in Platform.list){
+                Platform.list[id].draw();
+            }
+        }
+        
         function Player(initPack){
             this.id = initPack.id;
             this.username = initPack.username;
             
             this.x = initPack.x;
             this.y = initPack.y;
-            this.s = 30;
+            this.w = initPack.w;
+            this.h = initPack.h;
             this.col = initPack.col;
             
             this.draw = function(){
+                
                 c.beginPath();
                 c.fillStyle = this.col;
                 c.strokeStyle = 'black';
-                c.rect(this.x,this.y,this.s,this.s);
+                c.rect(this.x,this.y,this.w,this.h);
                 c.fill();
                 c.stroke();
                 c.closePath();
@@ -76,7 +104,7 @@
                 c.font = '15px Antic';
                 c.textAlign = 'center';
                 c.textBaseline = 'middle';
-                c.fillText(this.username,this.x + this.s/2, this.y - this.s / 3);
+                c.fillText(this.username,this.x + this.w/2, this.y - this.h / 3);
                 c.closePath();
             }
             Player.list[this.id] = this;
@@ -84,8 +112,8 @@
         Player.list = {};
         
         Player.drawAll = function(){
-            for (let p in Player.list){
-                Player.list[p].draw();
+            for (let id in Player.list){
+                Player.list[id].draw();
             }
         }
         
@@ -98,6 +126,9 @@
                 
                 for (let pack of packs.players){
                     new Player(pack);
+                }
+                for (let pack of packs.platforms){
+                    new Platform(pack);
                 }
             });
             
@@ -123,9 +154,9 @@
             
             setInterval(function(){
                 if (!selfId){return;}
-                
                 c.clearRect(0,0,W,H);
                 Player.drawAll();
+                Platform.drawAll();
                 
             },1000/60);
             
@@ -183,7 +214,6 @@
         }
         
         socket.on('signInResponse', function(data){
-            console.log('response');
             textResult.innerHTML = data.message;
             if (data.success){
                 divUsername.style.display = 'none';
