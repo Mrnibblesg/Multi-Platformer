@@ -10,10 +10,11 @@ let collision = require('./Utils/CollisionUtils');
 
 let SOCKET_LIST = {};
 
-
+let path = require('path');
 let express = require('express');
 let app = express();
 let serv = require('http').Server(app);
+
 
 
 const DEBUG = false;
@@ -38,7 +39,6 @@ io.sockets.on('connection', function(socket){
     
     
     socket.on('signIn', function(data){
-        //turn into function call with callback
         usernameCheck(data.username, function(result){
             socket.emit('signInResponse', result);
             
@@ -62,7 +62,7 @@ io.sockets.on('connection', function(socket){
 });
 
 
-
+//I use ID numbers to create entities
 function Entity(params){
     this.toRemove = false;
     this.id = params.id;
@@ -365,36 +365,43 @@ function usernameCheck(name, cb){
 
 
 (function(){
+    
+    //used for assigning ids
+    function next(){
+        return next.num++;
+    }
+    next.num = 0;
+    
     new Platform({
-        id: Math.random(),
+        id: next(),
         x: -1000,
         y: 700,
         w: 2800,
         h: 50
     });
     new Platform({
-        id: Math.random(),
+        id: next(),
         x: 50,
         y: 600,
         w: 100,
         h: 50
     });
     new Platform({
-        id: Math.random(),
+        id: next(),
         x: 600,
         y: 600,
         w: 100,
         h: 50
     });
     new Platform({
-        id: Math.random(),
+        id: next(),
         x: 200,
         y: 325,
         w: 100,
         h: 50
     });
     new Platform({
-        id: Math.random(),
+        id: next(),
         x: 300,
         y: 425,
         w: 200,
@@ -424,12 +431,8 @@ setInterval(function(){
     
 },1000/FPS);
 
-
-
-app.get('/',function(req, res) {
-	res.sendFile(__dirname + '/html/index.html');
-});
-app.use('/html', express.static(__dirname + 'html'));
+const clientPath = path.join(__dirname, 'html');
+app.use(express.static(clientPath));
 
 serv.listen(80);
 console.log('Server started.');
