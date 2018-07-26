@@ -1,9 +1,6 @@
 function Player(initPack){
-    this.id = initPack.id;
+    Entity.call(this,initPack);
     this.username = initPack.username;
-    
-    this.x = initPack.x;
-    this.y = initPack.y;
     this.w = initPack.w;
     this.h = initPack.h;
     this.col = initPack.col;

@@ -1,7 +1,5 @@
 function Platform(initPack){
-    this.id = initPack.id;
-    this.x = initPack.x;
-    this.y = initPack.y;
+    Entity.call(this,initPack);
     this.w = initPack.w;
     this.h = initPack.h;
     this.col = 'black';
