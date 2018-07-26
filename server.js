@@ -287,7 +287,6 @@ Player.onConnect = function(socket, username){
         'indigo',
         'violet',
         'purple',
-        'black',
         'gold',
         'lightcoral',
         'maroon',

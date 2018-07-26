@@ -4,23 +4,24 @@ function Player(initPack){
     this.w = initPack.w;
     this.h = initPack.h;
     this.col = initPack.col;
+    this.stroke = 'black';
+    
+    this.getCenter = function(){
+        return {x: this.x + this.w/2,y: this.y + this.h/2};
+    }
     
     this.draw = function(){
         
-        c.beginPath();
-        c.fillStyle = this.col;
-        c.strokeStyle = 'black';
-        c.rect(this.x,this.y,this.w,this.h);
-        c.fill();
-        c.stroke();
-        c.closePath();
+        screen.renderer.drawRect(this);
         
         c.beginPath();
         c.fillStyle = 'black';
         c.font = '15px Antic';
         c.textAlign = 'center';
         c.textBaseline = 'middle';
-        c.fillText(this.username,this.x + this.w/2, this.y - this.h / 3);
+        //Just a patch job until I make a text object
+        c.fillText(this.username,W/2, H/2 - this.h/2 - 10);
+        //c.fillText(this.username,this.x + this.w/2, this.y - this.h / 3);
         c.closePath();
     }
     Player.list[this.id] = this;

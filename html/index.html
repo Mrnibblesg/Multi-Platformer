@@ -6,8 +6,6 @@
         
         canvas{
             position:absolute;
-            width: 1000;
-            height: 800;
             left:8px;
             top:8px;
             border:1px solid #000000;
@@ -27,8 +25,8 @@
         
         
         <div id='divGame' style='display:none'>
-            <canvas id='cnv' width='800' height='800'></canvas>
-            <canvas id='cnv-ui' width='800' height='800'></canvas>
+            <canvas id='cnv' width='1000' height='800'></canvas>
+            <canvas id='cnv-ui' width='1000' height='800'></canvas>
             
             <div id='chat-text' style='width: 500px; margin-top: 800px; overflow-y: scroll'>
                 <div>Welcome to chat!</div>
@@ -137,14 +135,16 @@
         }
         
         function loop(){
-            
             c.clearRect(0,0,W,H);
+            screen.centerOn(Player.list[selfId]);
             Player.drawAll();
             Platform.drawAll();
             requestAnimationFrame(loop);
         }
         
     </script>
+    <script src='Engine/Screen.js'></script>
+    <script src='Entities/Entity.js'></script>
     <script src='Entities/Platform.js'></script>
     <script src='Entities/Player.js'></script>
     <script src='signIn.js'></script>

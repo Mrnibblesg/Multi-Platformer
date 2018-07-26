@@ -5,13 +5,7 @@ function Platform(initPack){
     this.col = 'black';
     
     this.draw = function(){
-        c.beginPath();
-        c.fillStyle = this.col;
-        c.strokeStyle = 'white';
-        c.rect(this.x,this.y,this.w,this.h);
-        c.fill();
-        c.stroke();
-        c.closePath();
+        screen.renderer.drawRect(this);
     }
     Platform.list[this.id] = this;
 }
