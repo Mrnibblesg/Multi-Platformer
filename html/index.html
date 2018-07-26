@@ -6,6 +6,8 @@
         
         canvas{
             position:absolute;
+            width: 1000;
+            height: 800;
             left:8px;
             top:8px;
             border:1px solid #000000;
@@ -53,72 +55,8 @@
         let selfId = null;
         let socket = io();
         
-        function Platform(initPack){
-            this.id = initPack.id;
-            this.x = initPack.x;
-            this.y = initPack.y;
-            this.w = initPack.w;
-            this.h = initPack.h;
-            this.col = 'black';
-            
-            this.draw = function(){
-                c.beginPath();
-                c.fillStyle = this.col;
-                c.strokeStyle = 'white';
-                c.rect(this.x,this.y,this.w,this.h);
-                c.fill();
-                c.stroke();
-                c.closePath();
-            }
-            Platform.list[this.id] = this;
-        }
-        Platform.list = {};
-        Platform.drawAll = function(){
-            for (let id in Platform.list){
-                Platform.list[id].draw();
-            }
-        }
         
-        function Player(initPack){
-            this.id = initPack.id;
-            this.username = initPack.username;
-            
-            this.x = initPack.x;
-            this.y = initPack.y;
-            this.w = initPack.w;
-            this.h = initPack.h;
-            this.col = initPack.col;
-            
-            this.draw = function(){
-                
-                c.beginPath();
-                c.fillStyle = this.col;
-                c.strokeStyle = 'black';
-                c.rect(this.x,this.y,this.w,this.h);
-                c.fill();
-                c.stroke();
-                c.closePath();
-                
-                c.beginPath();
-                c.fillStyle = 'black';
-                c.font = '15px Antic';
-                c.textAlign = 'center';
-                c.textBaseline = 'middle';
-                c.fillText(this.username,this.x + this.w/2, this.y - this.h / 3);
-                c.closePath();
-            }
-            Player.list[this.id] = this;
-        }
-        Player.list = {};
-        
-        Player.drawAll = function(){
-            for (let id in Player.list){
-                Player.list[id].draw();
-            }
-        }
-        
-        function signIn(){
-            
+        function startGame(){
             socket.on('init', function(packs){
                 if (packs.selfId){
                     selfId = packs.selfId;
@@ -152,15 +90,8 @@
                 }
             });
             
-            setInterval(function(){
-                if (!selfId){return;}
-                c.clearRect(0,0,W,H);
-                Player.drawAll();
-                Platform.drawAll();
-                
-            },1000/60);
             
-            
+            loop();
             
             document.onkeydown = function(event){
                 if(event.keyCode === 65){
@@ -192,65 +123,30 @@
                 }
             }
         }
-        
-        
-        
-        
-        
-        
-        let divUsername = document.getElementById('divUsername');
-        let divGame = document.getElementById('divGame');
-        
-        let btnUsername = document.getElementById('btnUsername');
-        let inputUsername = document.getElementById('inputUsername');
-        let formUsername = document.getElementById('formUsername');
-        
-        let textResult = document.getElementById('textResult');
-        
-        
-        btnUsername.onclick = function(e){
-            e.preventDefault();
-            socket.emit('signIn',{username: inputUsername.value});
+        function init(){
+            if (!selfId){
+                setTimeout(function(){
+                    console.log('couldn\'t find self id.');
+                    init();
+                }, 100)
+            }
+            else{
+                console.log('found self id.');
+            }
+            requestAnimationFrame(loop);
         }
         
-        socket.on('signInResponse', function(data){
-            textResult.innerHTML = data.message;
-            if (data.success){
-                divUsername.style.display = 'none';
-                divGame.style.display = 'inline-block';
-                signIn();
-            }
-            else{
-                inputUsername.value = '';
-            }
-        });
-        
-        let chatForm = document.getElementById('chat-form');
-        let chatInput = document.getElementById('chat-input');
-        let chatText = document.getElementById('chat-text');
-        
-        chatForm.onsubmit = function(e){
-            e.preventDefault();
-            if (chatInput.value === ''){return;}
-            if (chatInput.value[0] === '/'){
-                socket.emit('eval',chatInput.value.substring(1));
-            }
-            else{
-                socket.emit('chatMsgSend',{username: Player.list[selfId].username, message: chatInput.value});
-            }
+        function loop(){
             
-            chatInput.value = '';
-        }
-        
-        socket.on('chatMsgReceive', function(text){
-            const username = '<span id="chatUsername">' + text.username + '</span>';
-            const msg = ': ' + text.message;
-            chatText.innerHTML += '<div><p>' + username + msg + '</p></div>';
-        });
-        
-        document.oncontextmenu = function(e){
-            e.preventDefault();
+            c.clearRect(0,0,W,H);
+            Player.drawAll();
+            Platform.drawAll();
+            requestAnimationFrame(loop);
         }
         
     </script>
+    <script src='Entities/Platform.js'></script>
+    <script src='Entities/Player.js'></script>
+    <script src='signIn.js'></script>
+    <script src='chat.js'></script>
 </html>
