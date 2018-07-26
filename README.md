@@ -1,4 +1,4 @@
-#Multi-platformer
+# Multi-platformer
 
 This game is going to turn into a cooperative platformer game.
 I want it to have a theme, but don't currently have any ideas yet.
@@ -14,7 +14,7 @@ Some features that I would like to add sometime in the future:
 * A variety of different worlds, each complete with their own gimmicks
 * So much more...
 
-##Prerequisites
+## Prerequisites
 
 You must have Nodejs installed. Nodejs comes with npm, which is also required.
 When Nodejs is installed, go to where the project will be located. Then,
@@ -33,5 +33,5 @@ Now that we have all our dependencies, you are free to start the server:
 
 Then, all you have to do is connect to whatever machine is hosting the server and play!
 
-##Author
+## Author
 Mrnibblesg
