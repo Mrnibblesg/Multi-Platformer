@@ -26,8 +26,8 @@ module.exports = {
         return s / a.length;
     },
     distance: function(p1,p2){
-        const dx = p1.getX() - p2.getY();
-        const dy = p1.getY() - p2.getY();
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
         return Math.sqrt(dx**2 + dy**2);
     },
     

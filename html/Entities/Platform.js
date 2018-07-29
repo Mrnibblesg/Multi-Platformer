@@ -1,8 +1,6 @@
 function Platform(initPack){
     Entity.call(this,initPack);
-    this.w = initPack.w;
-    this.h = initPack.h;
-    this.col = 'black';
+    Rect.call(this,initPack);
     
     this.draw = function(){
         screen.renderer.drawRect(this);

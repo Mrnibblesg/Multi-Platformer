@@ -1,6 +1,6 @@
 function XYPair(pack){
-    this.x = pack.x;
-    this.y = pack.y;
+    this.x = pack.x || 0;
+    this.y = pack.y || 0;
     
     this.add = function(obj){
         this.x += obj.getX();
@@ -110,7 +110,7 @@ function Rect(pack){
     Shape.call(this,pack);
     this.w = pack.w;
     this.h = pack.h;
-    this.col = pack.col;
+    this.col = pack.col || 'black';
 }
 function Circle(pack){
     Shape.call(this,pack);

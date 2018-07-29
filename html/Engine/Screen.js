@@ -8,11 +8,14 @@ let screen = {
     //Obj must have at least an x and y.
     centerOn: function(obj){
         let center = this.getObjCenter(obj);
-        if (center === undefined){return;}
-        
+        if (center === undefined){
+            console.log(center);
+            console.log(this.x);
+            console.log(this.y);
+            return;
+        }
         this.x = center.x - this.w/2;
         this.y = center.y - this.h/2;
-        
     },
     getObjCenter: function(obj){
         if (typeof obj === 'undefined'){
@@ -26,8 +29,8 @@ let screen = {
             centerY = center.y;
         }
         else if (typeof obj.x === 'number' && typeof obj.y === 'number'){
-            centerX = obj.x;
-            centerY = obj.y;
+            centerX = obj.getX();
+            centerY = obj.getY();
         }
         else{
             console.error(`Tried to center on invalid object: ${obj}`);
@@ -41,12 +44,21 @@ let screen = {
 }
 screen.renderer = {
     drawRect: function(rect){
+        
         c.beginPath();
         c.fillStyle = rect.col;
         c.strokeStyle = rect.stroke;
-        c.rect(rect.x - screen.x, rect.y - screen.y, rect.w, rect.h);
+        c.rect(rect.getX() - screen.x, rect.getY() - screen.y, rect.w, rect.h);
         c.fill();
         c.stroke();
+        c.closePath();
+    },
+    drawText: function(text){
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+        c.beginPath();
+        c.fillStyle = text.col;
+        c.fillText(text.msg, text.getX() - screen.x, text.getY() - screen.y);
         c.closePath();
     }
     

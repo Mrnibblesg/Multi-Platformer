@@ -50,6 +50,8 @@
         let ui = canvas_ui.getContext('2d'); 
         ui.font = '30px Antic';
         
+        c.font = '15px Antic';
+        
         let selfId = null;
         let socket = io();
         
@@ -72,11 +74,8 @@
                 for (let pack of packs.players){
                     let p = Player.list[pack.id];
                     if (p){
-                        if (pack.x !== undefined){
-                            p.x = pack.x;
-                        }
-                        if (pack.y !== undefined){
-                            p.y = pack.y;
+                        if (pack.pos !== undefined){
+                            p.pos = pack.pos;
                         }
                     }
                 }
@@ -136,7 +135,10 @@
         
         function loop(){
             c.clearRect(0,0,W,H);
-            screen.centerOn(Player.list[selfId]);
+            if (Player.list[selfId] !== undefined){
+                screen.centerOn(Player.list[selfId]);
+            }
+            
             Player.drawAll();
             Platform.drawAll();
             requestAnimationFrame(loop);
@@ -144,6 +146,7 @@
         
     </script>
     <script src='Engine/Screen.js'></script>
+    <script src='Entities/Shapes.js'></script>
     <script src='Entities/Entity.js'></script>
     <script src='Entities/Platform.js'></script>
     <script src='Entities/Player.js'></script>
