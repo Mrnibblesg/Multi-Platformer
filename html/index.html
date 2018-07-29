@@ -89,8 +89,8 @@
             
             
             loop();
-            
-            document.onkeydown = function(event){
+            setControls();
+            /*document.onkeydown = function(event){
                 if(event.keyCode === 65){
                     socket.emit('keyPress',{inputId: 'l',state:true});
                 }
@@ -118,7 +118,7 @@
                 if(event.keyCode === 83){
                     socket.emit('keyPress',{inputId: 'd',state:false});
                 }
-            }
+            }*/
         }
         function init(){
             if (!selfId){
@@ -145,6 +145,7 @@
         }
         
     </script>
+    <script src='Engine/Controls.js'></script>
     <script src='Engine/Screen.js'></script>
     <script src='Entities/Shapes.js'></script>
     <script src='Entities/Entity.js'></script>

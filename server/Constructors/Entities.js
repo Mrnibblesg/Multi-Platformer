@@ -1,6 +1,7 @@
 const mathUtils = require('../Utils/MathUtils');
 const shape = require('./Shapes.js');
 const collision = require('../Utils/CollisionUtils');
+const controls = require('../Libraries/ControlFunctions');
 
 function Entity(params){
     this.toRemove = false;
@@ -53,40 +54,39 @@ function Player(params,initPack){
     this.accel = 3;
     this.maxXVel = 7;
     
+    this.isMoving = false;
+    
     this.canJump = false;
+    this.canExtraJump = false;
     
     this.maxYVel = this.h - 1;
     
-    this.keysPressed = {
-        left: false,
-        right: false,
-        up: false,
-        down: false
-    };
+    this.keysPressed = {};
     
     this.update = function(){
+        this.updateControls();
         this.updateMovement();
         this.updateCollision();
         
     }
-    
+    this.updateControls = function(){
+        if (this.keysPressed['A'] && this.keysPressed['D']){
+            this.isMoving = mathUtils.xor(this.keysPressed['A'].state,this.keysPressed['D'].state);
+        }
+        
+        for (key in this.keysPressed){
+            if (!this.keysPressed[key].state){
+                continue;
+            }
+            this.keysPressed[key].run(this);
+        }
+    }
     this.updateMovement = function(){
-        const isMoving = mathUtils.xor(this.keysPressed.left, this.keysPressed.right);
         
         this.prevX = this.getX();
         this.prevY = this.getY();
         
         let vel = this.vel;
-        
-        if (this.keysPressed.left){
-            vel.changeXComponent(-this.accel);
-        }
-        if (this.keysPressed.right){
-            vel.changeXComponent(this.accel);
-        }
-        if (this.keysPressed.up){
-            this.jump();
-        }
         
         if (vel.getXComponent() > this.maxXVel){
             vel.setXComponent(this.maxXVel);
@@ -96,7 +96,7 @@ function Player(params,initPack){
         }
         
         this.changeX(vel.getXComponent());
-        if (!isMoving){
+        if (!this.isMoving){
             vel.setXComponent(vel.getXComponent() * 0.7);
             if (Math.abs(vel.getXComponent()) < 0.1){
                 vel.setXComponent(0);
@@ -119,6 +119,12 @@ function Player(params,initPack){
             this.vel.setYComponent(-15);
         }
     }
+    this.extraJump = function(){
+        if (this.canExtraJump){
+            this.canExtraJump = false;
+            this.vel.setYComponent(-8);
+        }
+    }
     
     this.updateCollision = function(){
         this.canJump = false;
@@ -137,6 +143,7 @@ function Player(params,initPack){
                 this.setY(plat.getY() - this.h);
                 this.vel.setYComponent(0);
                 this.canJump = true;
+                this.canExtraJump = true;
             }
             //Bottom collision
             else if(this.prevY > plat.getY() + plat.h &&
@@ -239,21 +246,70 @@ Player.onConnect = function(socket, username, initPack){
         col: mathUtils.chooseRand(colors)
     },initPack);
     
-    socket.on('keyPress', function(key){
-        switch(key.inputId){
-            case 'l':
-                plr.keysPressed.left = key.state;
-                break;
-            case 'r':
-                plr.keysPressed.right = key.state;
-                break;
-            case 'u':
-                plr.keysPressed.up = key.state;
-                break;
-            case 'd':
-                plr.keysPressed.down = key.state;
-                break;
+    const run = function(plr){
+        if (!this.tapped){
+            this.tapped = true;
+            this.tap(plr);
         }
+        
+        this.hold(plr);
+    }
+    
+    //Used for controls with no binding for the time being.
+    const none = function(){}
+    
+    plr.keysPressed = {
+        A: {
+            state: false,
+            tapped: false,
+            run: run,
+            tap: none,
+            hold: controls.moveLeft
+        },
+        D: {
+            state: false,
+            tapped: false,
+            run: run,
+            tap: none,
+            hold: controls.moveRight
+        },
+        W: {
+            state: false,
+            tapped: false,
+            run: run,
+            tap: controls.extraJump,
+            hold: controls.normalJump
+        },
+        S: {
+            state: false,
+            tapped: false,
+            run: run,
+            tap: none,
+            hold: none
+        }
+    };
+    
+    
+    
+    socket.on('keyPress', function(key){
+        let plrKey = plr.keysPressed[key.inputId];
+        
+        if (plrKey === undefined){
+            //default key settings
+            plrKey = {
+                state: false,
+                tapped: false,
+                run: run,
+                tap: none,
+                hold: none
+            }
+        }
+        
+        plrKey.state = key.state;
+        if (!key.state){
+            plrKey.tapped = false;
+        }
+        
     });
     socket.emit('init',{
         selfId: socket.id,

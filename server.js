@@ -138,6 +138,30 @@ function usernameCheck(name, cb){
         w: 200,
         h: 50
     },initPack);
+    new entities.Platform({
+        id: next(),
+        x: -200,
+        y: 400,
+        vel: vel,
+        w: 200,
+        h: 50
+    },initPack);
+    new entities.Platform({
+        id: next(),
+        x: -600,
+        y: 400,
+        vel: vel,
+        w: 200,
+        h: 50
+    },initPack);
+    new entities.Platform({
+        id: next(),
+        x: -1000,
+        y: 400,
+        vel: vel,
+        w: 200,
+        h: 50
+    },initPack);
     
 })();
 
