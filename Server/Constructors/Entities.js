@@ -122,7 +122,7 @@ function Player(params,initPack){
     this.extraJump = function(){
         if (this.canExtraJump){
             this.canExtraJump = false;
-            this.vel.setYComponent(-8);
+            this.vel.setYComponent(-12);
         }
     }
     
