@@ -59,6 +59,7 @@ function Player(params,initPack){
     this.canJump = false;
     this.canExtraJump = false;
     this.canWallJump = false;
+    this.wallJumpSide = 'none';
     
     this.maxYVel = this.h - 1;
     
@@ -70,8 +71,9 @@ function Player(params,initPack){
         this.updatePosition();
         this.updateCollision();
         
-        
+
     }
+    
     this.updateControls = function(){
         if (this.keysPressed['A'] && this.keysPressed['D']){
             this.isMoving = mathUtils.xor(this.keysPressed['A'].state,this.keysPressed['D'].state);
@@ -91,11 +93,27 @@ function Player(params,initPack){
         
         let vel = this.vel;
         
+        //Throttle x momentum.
+        //Probably find a way to combine the two if blocks.
+        //More importantly, find a good way to preserve momentum
+        //that goes above the maximum
         if (vel.getXComponent() > this.maxXVel){
-            vel.setXComponent(this.maxXVel);
+            const diff = vel.getXComponent() - this.maxXVel;
+            if (diff < 5){
+                vel.setXComponent(this.maxXVel);
+            }
+            else{
+                vel.changeXComponent(-diff * 0.3);
+            }
         }
         else if (vel.getXComponent() < -this.maxXVel){
-            vel.setXComponent(-this.maxXVel);
+            const diff = vel.getXComponent() + this.maxXVel;
+            if (diff > -5){
+                vel.setXComponent(-this.maxXVel);
+            }
+            else{
+                vel.changeXComponent(-diff * 0.3);
+            }
         }
         
         if (!this.isMoving){
@@ -104,11 +122,20 @@ function Player(params,initPack){
                 vel.setXComponent(0);
             }
         }
+        
+        
         //Update y velocity
         vel.changeYComponent(this.grav);
         
+        //Throttle y velocity
         if (vel.getYComponent() > this.maxYVel){
-			vel.setYComponent(this.maxYVel);
+            const diff = vel.getYComponent() - this.maxYVel;
+			if (diff < 5){
+                vel.setYComponent(this.maxXVel);
+            }
+            else{
+                vel.changeYComponent(-diff * 0.75);
+            }
 		}
         
     }
@@ -120,7 +147,18 @@ function Player(params,initPack){
         }
     }
     this.extraJump = function(){
-        if (this.canExtraJump){
+        if (this.canWallJump){
+            this.vel.setYComponent(-12);
+            if (this.wallJumpSide === 'left'){
+                this.vel.setXComponent(-25);
+            }
+            else if (this.wallJumpSide === 'right'){
+                this.vel.setXComponent(25);
+            }
+            
+            
+        }
+        else if (this.canExtraJump){
             this.canExtraJump = false;
             this.vel.setYComponent(-12);
         }
@@ -135,6 +173,7 @@ function Player(params,initPack){
     this.updateCollision = function(){
         this.canJump = false;
         this.canWallJump = false;
+        this.wallJumpSide = 'none';
         
         for (let id in Platform.list){
             const plat = Platform.list[id];
@@ -156,12 +195,14 @@ function Player(params,initPack){
                     this.setX(plat.getX() - this.w);
                     this.vel.setXComponent(0);
                     this.canWallJump = true;
+                    this.wallJumpSide = 'left';
                     break;
                 }
                 case 'right':{
                     this.setX(plat.getX() + plat.w);
                     this.vel.setXComponent(0);
                     this.canWallJump = true;
+                    this.wallJumpSide = 'right';
                     break;
                 }
             }

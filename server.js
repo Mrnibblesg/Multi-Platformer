@@ -103,7 +103,7 @@ function usernameCheck(name, cb){
         x: -1000,
         y: 700,
         vel: vel,
-        w: 2800,
+        w: 5800,
         h: 50
     },initPack);
     new entities.Platform({
@@ -156,13 +156,12 @@ function usernameCheck(name, cb){
     },initPack);
     new entities.Platform({
         id: next(),
-        x: -1000,
+        x: 850,
         y: 400,
         vel: vel,
-        w: 200,
-        h: 50
+        w: 50,
+        h: 300
     },initPack);
-    
 })();
 
 
