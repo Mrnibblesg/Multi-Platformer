@@ -58,6 +58,7 @@ function Player(params,initPack){
     
     this.canJump = false;
     this.canExtraJump = false;
+    this.canWallJump = false;
     
     this.maxYVel = this.h - 1;
     
@@ -66,7 +67,9 @@ function Player(params,initPack){
     this.update = function(){
         this.updateControls();
         this.updateMovement();
+        this.updatePosition();
         this.updateCollision();
+        
         
     }
     this.updateControls = function(){
@@ -95,7 +98,6 @@ function Player(params,initPack){
             vel.setXComponent(-this.maxXVel);
         }
         
-        this.changeX(vel.getXComponent());
         if (!this.isMoving){
             vel.setXComponent(vel.getXComponent() * 0.7);
             if (Math.abs(vel.getXComponent()) < 0.1){
@@ -108,8 +110,6 @@ function Player(params,initPack){
         if (vel.getYComponent() > this.maxYVel){
 			vel.setYComponent(this.maxYVel);
 		}
-        //Update y location
-        this.changeY(vel.getYComponent());
         
     }
     
@@ -126,48 +126,44 @@ function Player(params,initPack){
         }
     }
     
+    this.updatePosition = function(){
+        const vel = this.vel;
+        this.changeX(vel.getXComponent());
+        this.changeY(vel.getYComponent());
+    }
+    
     this.updateCollision = function(){
         this.canJump = false;
+        this.canWallJump = false;
+        
         for (let id in Platform.list){
             const plat = Platform.list[id];
-            if (!plat.isColliding(this)){
-                continue;
-            }
             
-            //Find a way to integrate this into CollisionUtils.js
-            //Top collision
-            if (this.prevY < plat.getY() &&
-              this.prevX + this.w > plat.getX() &&
-              this.prevX < plat.getX() + plat.w){
-                  
-                this.setY(plat.getY() - this.h);
-                this.vel.setYComponent(0);
-                this.canJump = true;
-                this.canExtraJump = true;
-            }
-            //Bottom collision
-            else if(this.prevY > plat.getY() + plat.h &&
-              this.prevX + this.w > plat.getX() &&
-              this.prevX < plat.getX() + plat.w){
-                  
-                this.setY(plat.getY() + plat.h)
-                this.vel.setYComponent(0);
-            }
-            //Left collision
-            else if (this.prevX < plat.getX() &&
-              this.prevY + this.h > plat.getY() &&
-              this.prevY < plat.getY() + plat.h){
-                  
-                this.setX(plat.getX() - this.w);
-                this.vel.setXComponent(0);
-            }
-            //Right collision
-            else if(this.prevX + this.w > plat.getX() + plat.w &&
-              this.prevY + this.h > plat.getY() &&
-              this.prevY < plat.getY() + plat.h){
-                  
-                this.setX(plat.getX() + plat.w);
-                this.vel.setXComponent(0);
+            switch (collision.playerRect(this,plat)){
+                case 'top':{
+                    this.setY(plat.getY() - this.h);
+                    this.vel.setYComponent(0);
+                    this.canJump = true;
+                    this.canExtraJump = true;
+                    break;
+                }
+                case 'bottom':{
+                    this.setY(plat.getY() + plat.h);
+                    this.vel.setYComponent(0);
+                    break;
+                }
+                case 'left':{
+                    this.setX(plat.getX() - this.w);
+                    this.vel.setXComponent(0);
+                    this.canWallJump = true;
+                    break;
+                }
+                case 'right':{
+                    this.setX(plat.getX() + plat.w);
+                    this.vel.setXComponent(0);
+                    this.canWallJump = true;
+                    break;
+                }
             }
         }
     }

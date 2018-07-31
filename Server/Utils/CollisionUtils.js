@@ -68,5 +68,6 @@ function segmentCircle(p1,p2,c){
 exports.pointCircle = pointCircle;
 exports.circle = circle;
 exports.rect = rect;
+exports.playerRect = playerRect;
 exports.lineCircle = lineCircle;
 exports.segmentCircle = segmentCircle;
