@@ -24,7 +24,6 @@ const GRAV = 0.6;
 
 let initPack = {players:[], platforms: []};
 let removePack = {players:[], platforms: []};
-console
 
 let io = require('socket.io')(serv,{});
 
@@ -41,6 +40,11 @@ io.sockets.on('connection', function(socket){
             
             if (result.success){
                 entities.Player.onConnect(socket,data.username,initPack);
+                socket.emit('init',{
+                    selfId: socket.id,
+                    players: entities.Player.getAllInitPack(),
+                    platforms: entities.Platform.getAllInitPack()
+                });
             }
         });
     });
