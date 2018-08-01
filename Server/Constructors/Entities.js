@@ -93,28 +93,10 @@ function Player(params,initPack){
         
         let vel = this.vel;
         
-        //Throttle x momentum.
-        //Probably find a way to combine the two if blocks.
-        //More importantly, find a good way to preserve momentum
-        //that goes above the maximum
-        if (vel.getXComponent() > this.maxXVel){
-            const diff = vel.getXComponent() - this.maxXVel;
-            if (diff < 5){
-                vel.setXComponent(this.maxXVel);
-            }
-            else{
-                vel.changeXComponent(-diff * 0.3);
-            }
+        if (this.overMaxSpeed()){
+            this.velocityThrottle();
         }
-        else if (vel.getXComponent() < -this.maxXVel){
-            const diff = vel.getXComponent() + this.maxXVel;
-            if (diff > -5){
-                vel.setXComponent(-this.maxXVel);
-            }
-            else{
-                vel.changeXComponent(-diff * 0.3);
-            }
-        }
+        
         
         if (!this.isMoving){
             vel.setXComponent(vel.getXComponent() * 0.7);
@@ -138,6 +120,34 @@ function Player(params,initPack){
             }
 		}
         
+    }
+    
+    this.velocityThrottle = function(){
+        let vel = this.vel;
+        
+        //Throttle x momentum.
+        //Probably find a way to combine the two if blocks.
+        //More importantly, find a good way to preserve momentum
+        //that goes above the maximum
+        if (vel.getXComponent() > this.maxXVel){
+            const diff = vel.getXComponent() - this.maxXVel;
+            
+            if (vel.getXComponent() - this.accel > this.maxXVel){
+                vel.changeXComponent(-this.accel);
+            }
+            
+        }
+        else if (vel.getXComponent() < -this.maxXVel){
+            const diff = vel.getXComponent() + this.maxXVel;
+            
+            if (vel.getXComponent() + this.accel < -this.maxXVel){
+                vel.changeXComponent(this.accel);
+            }
+        }
+    }
+    
+    this.overMaxSpeed = function(){
+        return Math.abs(this.vel.getXComponent()) > this.maxXVel;
     }
     
     this.jump = function(){

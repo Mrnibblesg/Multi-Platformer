@@ -43,6 +43,10 @@ module.exports = {
     },
     xor: function(a,b){
         return !(a === b);
+    },
+    //add way to differentiate between >= and >
+    inRange: function(val, min, max){
+        return (val > min && val < max);
     }
 }
 
