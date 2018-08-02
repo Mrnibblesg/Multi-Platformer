@@ -2,7 +2,7 @@ const Entity = require('./Entity');
 const shape = require('../Shapes.js');
 const collision = require('../../Utils/CollisionUtils');
 
-function Platform(params,initPack){
+function Platform(params){
     Entity.call(this,params);
     shape.Rect.call(this,params);
     
@@ -21,7 +21,10 @@ function Platform(params,initPack){
     }
     
     Platform.list[this.id] = this;
-    initPack.platforms.push(this.getInitPack());
+    
+    //only really needs to be used when platforms
+    //are able to be created during gameplay
+    //initPack.platforms.push(this.getInitPack());
 }
 Platform.list = {};
 

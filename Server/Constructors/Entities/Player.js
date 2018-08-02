@@ -144,6 +144,12 @@ function Player(params,initPack){
         const vel = this.vel;
         this.changeX(vel.getXComponent());
         this.changeY(vel.getYComponent());
+        
+        if (this.getY() > 3000){
+            this.setX(385);
+            this.setY(650);
+        }
+        
     }
     
     this.updateCollision = function(list){
