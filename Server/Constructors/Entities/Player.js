@@ -77,13 +77,7 @@ function Player(params,initPack){
         
         //Throttle y velocity
         if (vel.getYComponent() > this.maxYVel){
-            const diff = vel.getYComponent() - this.maxYVel;
-			if (diff < 5){
-                vel.setYComponent(this.maxXVel);
-            }
-            else{
-                vel.changeYComponent(-diff * 0.75);
-            }
+            vel.setYComponent(this.maxYVel);
 		}
         
     }
