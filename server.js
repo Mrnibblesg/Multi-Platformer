@@ -16,7 +16,7 @@ let express = require('express');
 let app = express();
 let serv = require('http').Server(app);
 
-let level = require('./Server/LevelData/testArea2');
+let loader = require('./Server/LevelData/levelLoader');
 
 
 const DEBUG = false;
@@ -90,7 +90,7 @@ function usernameCheck(name, cb){
     }
 }
 
-level.loadLevel(initPack);
+loader('testArea.json',initPack);
 
 
 setInterval(function(){

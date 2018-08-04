@@ -16,6 +16,9 @@ function Position(pack){
 //x and y as a vector with x and y components.
 //velocities and accelerations should be vectors.
 function Vector(pack){
+    if (pack.vel === undefined){
+        pack.vel = {x:0, y:0};
+    }
     XYPair.call(this,pack.vel);
     
     this.getAngle = function(){
