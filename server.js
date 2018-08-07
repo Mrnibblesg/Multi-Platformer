@@ -16,16 +16,13 @@ let express = require('express');
 let app = express();
 let serv = require('http').Server(app);
 
+let packManager = require('./Server/Engine/packManager');
 let loader = require('./Server/LevelData/levelLoader');
-
 
 const DEBUG = false;
 const FPS = 60;
 
 const GRAV = 0.6;
-
-let initPack = {players:[], platforms: []};
-let removePack = {players:[], platforms: []};
 
 let io = require('socket.io')(serv,{});
 
@@ -41,7 +38,7 @@ io.sockets.on('connection', function(socket){
             socket.emit('signInResponse', result);
             
             if (result.success){
-                entities.Player.onConnect(socket,data.username,initPack);
+                entities.Player.onConnect(socket,data.username);
                 socket.emit('init',{
                     selfId: socket.id,
                     players: entities.Player.getAllInitPack(),
@@ -59,7 +56,7 @@ io.sockets.on('connection', function(socket){
     
     socket.on('disconnect',function(){
         delete SOCKET_LIST[socket.id];
-        entities.Player.onDisconnect(socket,removePack);
+        entities.Player.onDisconnect(socket);
         console.log('Client disconnected');
     });
 });
@@ -90,27 +87,21 @@ function usernameCheck(name, cb){
     }
 }
 
-loader('testArea.json',initPack);
+loader('testArea.json');
 
 
 setInterval(function(){
-    let pack = {
-        players: entities.Player.getAllUpdatePack(),
-    }
     
-    for (let s in SOCKET_LIST){
-        const socket = SOCKET_LIST[s];
+    for (let id in SOCKET_LIST){
+        const socket = SOCKET_LIST[id];
         
-        socket.emit('init', initPack);
-        socket.emit('update', pack);
-        socket.emit('remove', removePack);
+        socket.emit('init', packManager.initPack);
+        socket.emit('update', packManager.getAllUpdatePack());
+        socket.emit('remove', packManager.removePack);
     }
     
     
-    initPack.players = [];
-    initPack.platforms = [];
-    removePack.players = [];
-    removePack.platforms = [];
+    packManager.resetPacks();
     
 },1000/FPS);
 

@@ -4,8 +4,8 @@ const collision = require('../../Utils/CollisionUtils');
 const mathUtils = require('../../Utils/MathUtils');
 const controls = require('../../Libraries/ControlFunctions');
 const shape = require('../Shapes');
-
-function Player(params,initPack){
+const packManager = require('../../Engine/packManager');
+function Player(params){
     Entity.call(this,params);
     shape.Rect.call(this,params);
     
@@ -205,7 +205,7 @@ function Player(params,initPack){
     
     Player.list[this.id] = this;
     
-    initPack.players.push(this.getInitPack());
+    packManager.addInit('players',this.getInitPack());
 }
 Player.list = {};
 
@@ -227,7 +227,7 @@ Player.getAllUpdatePack = function(){
     }
     return pack;
 }
-Player.onConnect = function(socket, username, initPack){
+Player.onConnect = function(socket, username){
     
     const colors = [
         'red',
@@ -257,7 +257,7 @@ Player.onConnect = function(socket, username, initPack){
         w: 30,
         h: 30,
         col: mathUtils.chooseRand(colors)
-    },initPack);
+    });
     
     const run = function(plr){
         if (!this.tapped){
@@ -326,8 +326,8 @@ Player.onConnect = function(socket, username, initPack){
     });
 }
 
-Player.onDisconnect = function(socket,removePack){
+Player.onDisconnect = function(socket){
     delete Player.list[socket.id];
-    removePack.players.push(socket.id);
+    packManager.addRemove('players',socket.id);
 }
 module.exports = Player;

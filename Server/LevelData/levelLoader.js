@@ -1,21 +1,23 @@
 const fs = require('fs');
 const entities = require('../Constructors/Entities');
-function loadLevel(name,initPack){
+const packManager = require('../Engine/packManager');
+function loadLevel(name){
     const path = './Server/LevelData/' + name;
     
     fs.readFile(path, 'utf8', (err, data) => {
         if (err) {throw err;}
-        doneLoading(data,initPack);
+        doneLoading(data);
     });
 }
-function doneLoading(levelData,initPack){
+function doneLoading(levelData){
     levelData = JSON.parse(levelData);
     for (let i = 0; i < levelData.platforms.length; i++){
         const pack = levelData.platforms[i];
         pack.id = i;
-        new entities.Platform(pack);
+        let platform = new entities.Platform(pack);
+        packManager.addInit('platforms',platform.getInitPack());
     }
-    initPack.platforms = entities.Platform.getAllInitPack();
+    
 }
 
 
