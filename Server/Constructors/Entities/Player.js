@@ -5,6 +5,7 @@ const mathUtils = require('../../Utils/MathUtils');
 const controls = require('../../Libraries/ControlFunctions');
 const shape = require('../Shapes');
 const packManager = require('../../Engine/packManager');
+
 function Player(params){
     Entity.call(this,params);
     shape.Rect.call(this,params);
@@ -31,7 +32,7 @@ function Player(params){
     
     this.keysPressed = {};
     
-    this.update = function(platformList){
+    /*this.update = function(platformList){
         this.updateControls();
         this.updateMovement();
         this.updatePosition();
@@ -52,6 +53,7 @@ function Player(params){
             this.keysPressed[key].run(this);
         }
     }
+    
     this.updateMovement = function(){
         
         this.prevX = this.getX();
@@ -201,12 +203,173 @@ function Player(params){
             id: this.id,
             pos: this.pos
         };
-    };
+    };*/
     
     Player.list[this.id] = this;
     
     packManager.addInit('players',this.getInitPack());
 }
+Player.prototype = shape.Rect.prototype;
+Player.prototype.update = function(platformList){
+    this.updateControls();
+    this.updateMovement();
+    this.updatePosition();
+    this.updateCollision(platformList);
+    
+};
+Player.prototype.updateControls = function(){
+    if (this.keysPressed['A'] && this.keysPressed['D']){
+        this.isMoving = mathUtils.xor(this.keysPressed['A'].state,this.keysPressed['D'].state);
+    }
+    
+    for (key in this.keysPressed){
+        if (!this.keysPressed[key].state){
+            continue;
+        }
+        this.keysPressed[key].run(this);
+    }
+};
+Player.prototype.updateMovement = function(){
+    this.prevX = this.getX();
+    this.prevY = this.getY();
+    
+    let vel = this.vel;
+    
+    if (this.overMaxSpeed()){
+        this.velocityThrottle();
+    }
+    
+    
+    if (!this.isMoving){
+        vel.setXComponent(vel.getXComponent() * 0.7);
+        if (Math.abs(vel.getXComponent()) < 0.1){
+            vel.setXComponent(0);
+        }
+    }
+    
+    
+    //Update y velocity
+    vel.changeYComponent(this.grav);
+    
+    //Throttle y velocity
+    if (vel.getYComponent() > this.maxYVel){
+        vel.setYComponent(this.maxYVel);
+    }
+    
+};
+Player.prototype.velocityThrottle = function(){
+    let vel = this.vel;
+    
+    //Throttle x momentum.
+    //Probably find a way to combine the two if blocks.
+    //More importantly, find a good way to preserve momentum
+    //that goes above the maximum
+    if (vel.getXComponent() > this.maxXVel){
+        const diff = vel.getXComponent() - this.maxXVel;
+        
+        if (vel.getXComponent() - this.accel > this.maxXVel){
+            vel.changeXComponent(-this.accel);
+        }
+        
+    }
+    else if (vel.getXComponent() < -this.maxXVel){
+        const diff = vel.getXComponent() + this.maxXVel;
+        
+        if (vel.getXComponent() + this.accel < -this.maxXVel){
+            vel.changeXComponent(this.accel);
+        }
+    }
+};
+Player.prototype.overMaxSpeed = function(){
+    return Math.abs(this.vel.getXComponent()) > this.maxXVel;
+};
+Player.prototype.jump = function(){
+    if (this.canJump){
+        this.canJump = false;
+        this.vel.setYComponent(-15);
+    }
+};
+Player.prototype.extraJump = function(){
+    if (this.canWallJump){
+        this.vel.setYComponent(-12);
+        if (this.wallJumpSide === 'left'){
+            this.vel.setXComponent(-25);
+        }
+        else if (this.wallJumpSide === 'right'){
+            this.vel.setXComponent(25);
+        }
+        
+        
+    }
+    else if (this.canExtraJump){
+        this.canExtraJump = false;
+        this.vel.setYComponent(-12);
+    }
+};
+Player.prototype.updatePosition = function(){
+    const vel = this.vel;
+    this.changeX(vel.getXComponent());
+    this.changeY(vel.getYComponent());
+    
+    if (this.getY() > 3000){
+        this.setX(385);
+        this.setY(650);
+    }
+};
+Player.prototype.updateCollision = function(list){
+    this.canJump = false;
+    this.canWallJump = false;
+    this.wallJumpSide = 'none';
+    
+    for (let id in list){
+        const plat = list[id];
+        
+        switch (collision.playerRect(this,plat)){
+            case 'top':{
+                this.setY(plat.getY() - this.h);
+                this.vel.setYComponent(0);
+                this.canJump = true;
+                this.canExtraJump = true;
+                break;
+            }
+            case 'bottom':{
+                this.setY(plat.getY() + plat.h);
+                this.vel.setYComponent(0);
+                break;
+            }
+            case 'left':{
+                this.setX(plat.getX() - this.w);
+                this.vel.setXComponent(0);
+                this.canWallJump = true;
+                this.wallJumpSide = 'left';
+                break;
+            }
+            case 'right':{
+                this.setX(plat.getX() + plat.w);
+                this.vel.setXComponent(0);
+                this.canWallJump = true;
+                this.wallJumpSide = 'right';
+                break;
+            }
+        }
+    }
+};
+Player.prototype.getInitPack = function(){
+    return {
+        username: this.username,
+        id: this.id,
+        pos: this.pos,
+        w: this.w,
+        h: this.h,
+        col: this.col
+    };
+};
+Player.prototype.getUpdatePack = function(){
+    return {
+        id: this.id,
+        pos: this.pos
+    };
+};
 Player.list = {};
 
 Player.getAllInitPack = function(){
