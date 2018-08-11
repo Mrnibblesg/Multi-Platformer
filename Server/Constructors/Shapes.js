@@ -11,7 +11,7 @@ XYPair.prototype.add = function(obj){
 function Position(pack){
     XYPair.call(this,pack);
 }
-Position.prototype = XYPair.prototype;
+Position.prototype = Object.create(XYPair.prototype);
 
 //x and y as a vector with x and y components.
 //velocities and accelerations should be vectors.
@@ -22,7 +22,7 @@ function Vector(pack){
     XYPair.call(this,pack.vel);
     
 }
-Vector.prototype = XYPair.prototype;
+Vector.prototype = Object.create(XYPair.prototype);
 Vector.prototype.getAngle = function(){ return Math.atan2(this.y,this.x);};
 Vector.prototype.getMagnitude = function(){return Math.sqrt(this.x ** 2 + this.y ** 2);};
 Vector.prototype.getXComponent = function(amt=1){return this.x * amt;};
@@ -73,14 +73,14 @@ function Rect(pack){
     this.h = pack.h;
     this.col = pack.col || 'black';
 }
-Rect.prototype = Shape.prototype;
+Rect.prototype = Object.create(Shape.prototype);
 
 function Circle(pack){
     Shape.call(this,pack);
     this.r = pack.r;
     this.col = pack.col;
 }
-Circle.prototype = Shape.prototype;
+Circle.prototype = Object.create(Shape.prototype);
 
 exports.XYPair = XYPair;
 exports.Position = Position;

@@ -14,7 +14,7 @@ function Platform(params){
 }
 Platform.list = {};
 
-Platform.prototype = shape.Rect.prototype;
+Platform.prototype = Object.create(shape.Rect.prototype);
 Platform.prototype.getInitPack = function(){
     return {
         id: this.id,
@@ -34,8 +34,6 @@ Platform.getAllInitPack = function(){
     for (let id in Platform.list){
         let platform = Platform.list[id];
         let pack = platform.getInitPack();
-
-        console.log(pack);
         
         initPack.push(pack);
     }
