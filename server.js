@@ -91,12 +91,12 @@ loader('testArea.json');
 
 
 setInterval(function(){
-    
+    const updatePack = packManager.getAllUpdatePack();
     for (let id in SOCKET_LIST){
         const socket = SOCKET_LIST[id];
         
         socket.emit('init', packManager.initPack);
-        socket.emit('update', packManager.getAllUpdatePack());
+        socket.emit('update', updatePack);
         socket.emit('remove', packManager.removePack);
     }
     
