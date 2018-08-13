@@ -1,15 +1,15 @@
-function Platform(initPack){
-    Entity.call(this,initPack);
-    Rect.call(this,initPack);
-    
-    this.draw = function(){
+class Platform extends Rect{
+    constructor(pack){
+        super(pack);
+        listManager.addToList('platforms',this);
+    }
+    draw(){
         screen.renderer.drawRect(this);
     }
-    Platform.list[this.id] = this;
-}
-Platform.list = {};
-Platform.drawAll = function(){
-    for (let id in Platform.list){
-        Platform.list[id].draw();
+    static drawAll(){
+        let list = listManager['platforms'];
+        for (let id in list){
+            list[id].draw();
+        }
     }
 }

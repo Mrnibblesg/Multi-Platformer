@@ -9,7 +9,7 @@ chatForm.onsubmit = function(e){
         socket.emit('eval',chatInput.value.substring(1));
     }
     else{
-        socket.emit('chatMsgSend',{username: Player.list[selfId].getUsername(), message: chatInput.value});
+        socket.emit('chatMsgSend',{username: listManager['players'][selfId].username, message: chatInput.value});
     }
     
     chatInput.value = '';

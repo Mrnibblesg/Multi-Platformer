@@ -2,20 +2,19 @@
 function moveLeft(obj){
     if (!obj.isMoving){return;}
     if (!obj.canJump){
-        obj.vel.changeXComponent(-obj.accel * 0.75);
+        obj.vel.x += -obj.accel * 0.75;
     }
     else{
-        obj.vel.changeXComponent(-obj.accel);
+        obj.vel.x += -obj.accel;
     }
-    
 }
 function moveRight(obj){
     if (!obj.isMoving){return;}
     if (!obj.canJump){
-        obj.vel.changeXComponent(obj.accel * 0.75);
+        obj.vel.x += obj.accel * 0.75;
     }
     else{
-        obj.vel.changeXComponent(obj.accel);
+        obj.vel.x += obj.accel;
     }
 }
 function extraJump(obj){

@@ -8,40 +8,40 @@ function circle(c1, c2){
     return distance(c1.pos,c2.pos) <= c1.r + c2.r;
 }
 function rect(r1,r2){
-    return r1.getX() < r2.getX() + r2.w &&
-            r1.getX() + r1.w > r2.getX() &&
-            r1.getY() < r2.getY() + r2.h &&
-            r1.getY() + r1.h > r2.getY();
+    return r1.x < r2.x + r2.w &&
+            r1.x + r1.w > r2.x &&
+            r1.y < r2.y + r2.h &&
+            r1.y + r1.h > r2.y;
 }
 function playerRect(p,r){
     if (!rect(p,r)){
         return false;
     }
     
-    if (p.prevY < r.getY() &&
-      p.prevX + p.w > r.getX() &&
-      p.prevX < r.getX() + r.w){
+    if (p.prevY < r.y &&
+      p.prevX + p.w > r.x &&
+      p.prevX < r.x + r.w){
           
         return 'top';
     }
     //Bottom collision
-    else if(p.prevY > r.getY() + r.h &&
-      p.prevX + p.w > r.getX() &&
-      p.prevX < r.getX() + r.w){
+    else if(p.prevY > r.y + r.h &&
+      p.prevX + p.w > r.x &&
+      p.prevX < r.x + r.w){
           
         return 'bottom';
     }
     //Left collision
-    else if (p.prevX < r.getX() &&
-      p.prevY + p.h > r.getY() &&
-      p.prevY < r.getY() + r.h){
+    else if (p.prevX < r.x &&
+      p.prevY + p.h > r.y &&
+      p.prevY < r.y + r.h){
           
         return 'left';
     }
     //Right collision
-    else if(p.prevX + p.w > r.getX() + r.w &&
-      p.prevY + p.h > r.getY() &&
-      p.prevY < r.getY() + r.h){
+    else if(p.prevX + p.w > r.x + r.w &&
+      p.prevY + p.h > r.y &&
+      p.prevY < r.y + r.h){
           
         return 'right';
     }

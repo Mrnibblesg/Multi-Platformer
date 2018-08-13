@@ -4,6 +4,12 @@ let screen = {
     w: W,
     h: H,
     
+    centerOnSelf: function(){
+        let self = listManager['players'][selfId];
+        if (self !== undefined){
+            screen.centerOn(self);
+        }
+    },
     //Instantly sets the center.
     //Obj must have at least an x and y.
     centerOn: function(obj){
@@ -23,14 +29,14 @@ let screen = {
             return undefined;
         }
         let centerX, centerY;
-        if (typeof obj.getCenter === 'function'){
-            const center = obj.getCenter();
+        if (obj.center !== undefined){
+            const center = obj.center;
             centerX = center.x;
             centerY = center.y;
         }
         else if (typeof obj.x === 'number' && typeof obj.y === 'number'){
-            centerX = obj.getX();
-            centerY = obj.getY();
+            centerX = obj.x;
+            centerY = obj.y;
         }
         else{
             console.error(`Tried to center on invalid object: ${obj}`);
@@ -48,7 +54,7 @@ screen.renderer = {
         c.beginPath();
         c.fillStyle = rect.col;
         c.strokeStyle = rect.stroke;
-        c.rect(rect.getX() - screen.x, rect.getY() - screen.y, rect.w, rect.h);
+        c.rect(rect.x - screen.x, rect.y - screen.y, rect.w, rect.h);
         c.fill();
         c.stroke();
         c.closePath();
@@ -58,7 +64,7 @@ screen.renderer = {
         c.textBaseline = 'middle';
         c.beginPath();
         c.fillStyle = text.col;
-        c.fillText(text.msg, text.getX() - screen.x, text.getY() - screen.y);
+        c.fillText(text.msg, text.x - screen.x, text.y - screen.y);
         c.closePath();
     }
     

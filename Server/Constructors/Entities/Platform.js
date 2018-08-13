@@ -1,43 +1,32 @@
-const Entity = require('./Entity');
 const shape = require('../Shapes.js');
 const collision = require('../../Utils/CollisionUtils');
+const listManager = require('../../Engine/listManager');
 
-function Platform(params){
-    Entity.call(this,params);
-    shape.Rect.call(this,params);
-    Platform.list[this.id] = this;
-    
-    //only really needs to be used when platforms
-    //are able to be created during gameplay
-    
-    //initPack.platforms.push(this.getInitPack());
-}
-Platform.list = {};
-
-Platform.prototype = Object.create(shape.Rect.prototype);
-Platform.prototype.getInitPack = function(){
-    return {
-        id: this.id,
-        x: this.getX(),
-        y: this.getY(),
-        w: this.w,
-        h: this.h
-    };
-}
-Platform.prototype.isColliding = function(rect){
-    return collision.rect(this,rect);
-}
-
-Platform.getAllInitPack = function(){
-
-    let initPack = [];
-    for (let id in Platform.list){
-        let platform = Platform.list[id];
-        let pack = platform.getInitPack();
-        
-        initPack.push(pack);
+class Platform extends shape.Rect{
+    constructor(pack){
+        super(pack);
+        listManager.addToList('platforms',this);
     }
-    return initPack;
+    get initPack(){
+        return {
+            id: this.id,
+            pos: this.pos,
+            w: this.w,
+            h: this.h
+        };
+    }
+    isColliding(rect){
+        return collision.rect(this,rect);
+    }
+    
+    static get allInitPack(){
+        let initPack = [];
+        const platforms = listManager.getList('platforms');
+        for (let id in platforms){
+            const platform = platforms[id];
+            initPack.push(platform.initPack);
+        }
+        return initPack;
+    }
 }
-
 module.exports = Platform;

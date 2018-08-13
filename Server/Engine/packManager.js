@@ -1,7 +1,7 @@
 const entities = require('../Constructors/Entities');
 function getAllUpdatePack(){
     let pack = {};
-    pack.players = entities.Player.getAllUpdatePack();
+    pack.players = entities.Player.allUpdatePack;
     //only thing that needs to update right now is the players
     return pack;
 }

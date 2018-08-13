@@ -16,8 +16,12 @@ let express = require('express');
 let app = express();
 let serv = require('http').Server(app);
 
-let packManager = require('./Server/Engine/packManager');
-let loader = require('./Server/LevelData/levelLoader');
+const packManager = require('./Server/Engine/packManager');
+const listManager = require('./Server/Engine/listManager');
+const loader = require('./Server/LevelData/levelLoader');
+
+listManager.addList('platforms');
+listManager.addList('players');
 
 const DEBUG = false;
 const FPS = 60;
@@ -41,8 +45,8 @@ io.sockets.on('connection', function(socket){
                 entities.Player.onConnect(socket,data.username);
                 socket.emit('init',{
                     selfId: socket.id,
-                    players: entities.Player.getAllInitPack(),
-                    platforms: entities.Platform.getAllInitPack()
+                    players: entities.Player.allInitPack,
+                    platforms: entities.Platform.allInitPack
                 });
             }
         });

@@ -38,6 +38,7 @@
         </div>
     </body>
     <script src='https://cdn.socket.io/socket.io-1.4.5.js'></script>
+    <script src='Engine/ListManager.js'></script>
     <script type='text/javascript'>
         
         let canvas = document.getElementById('cnv');
@@ -55,6 +56,8 @@
         let selfId = null;
         let socket = io();
         
+        listManager.addList('players');
+        listManager.addList('platforms');
         
         function startGame(){
             socket.on('init', function(packs){
@@ -66,13 +69,14 @@
                     new Player(pack);
                 }
                 for (let pack of packs.platforms){
+                    console.log(pack);
                     new Platform(pack);
                 }
             });
             
             socket.on('update', function(packs){
                 for (let pack of packs.players){
-                    let p = Player.list[pack.id];
+                    let p = listManager['players'][pack.id];
                     if (p){
                         if (pack.pos !== undefined){
                             p.pos = pack.pos;
@@ -83,42 +87,13 @@
             
             socket.on('remove', function(packs){
                 for (let id of packs.players){
-                    delete Player.list[id];
+                    listManager.removeFromList('players',id);
                 }
             });
             
             
             loop();
             setControls();
-            /*document.onkeydown = function(event){
-                if(event.keyCode === 65){
-                    socket.emit('keyPress',{inputId: 'l',state:true});
-                }
-                if (event.keyCode === 68){
-                    socket.emit('keyPress',{inputId: 'r',state:true});
-                }
-                if(event.keyCode === 87){
-                    socket.emit('keyPress',{inputId: 'u',state:true});
-                }
-                if(event.keyCode === 83){
-                    socket.emit('keyPress',{inputId: 'd',state:true});
-                }
-                
-            }
-            document.onkeyup = function(event){
-                if(event.keyCode === 65){
-                    socket.emit('keyPress',{inputId: 'l',state:false});
-                }
-                if (event.keyCode === 68){
-                    socket.emit('keyPress',{inputId: 'r',state:false});
-                }
-                if(event.keyCode === 87){
-                    socket.emit('keyPress',{inputId: 'u',state:false});
-                }
-                if(event.keyCode === 83){
-                    socket.emit('keyPress',{inputId: 'd',state:false});
-                }
-            }*/
         }
         function init(){
             if (!selfId){
@@ -130,14 +105,14 @@
             else{
                 console.log('found self id.');
             }
+            
             requestAnimationFrame(loop);
         }
         
         function loop(){
             c.clearRect(0,0,W,H);
-            if (Player.list[selfId] !== undefined){
-                screen.centerOn(Player.list[selfId]);
-            }
+            
+            screen.centerOnSelf();
             
             Player.drawAll();
             Platform.drawAll();
@@ -148,7 +123,6 @@
     <script src='Engine/Controls.js'></script>
     <script src='Engine/Screen.js'></script>
     <script src='Entities/Shapes.js'></script>
-    <script src='Entities/Entity.js'></script>
     <script src='Entities/Platform.js'></script>
     <script src='Entities/Player.js'></script>
     <script src='signIn.js'></script>

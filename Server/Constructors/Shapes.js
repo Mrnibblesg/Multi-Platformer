@@ -1,90 +1,96 @@
-function XYPair(pack){
-    this.x = pack.x || 0;
-    this.y = pack.y || 0;
-}
-XYPair.prototype.add = function(obj){
-    this.x += obj.getX();
-    this.y += obj.getY();
-}
 
-//x and y as a position
-function Position(pack){
-    XYPair.call(this,pack);
-}
-Position.prototype = Object.create(XYPair.prototype);
-
-//x and y as a vector with x and y components.
-//velocities and accelerations should be vectors.
-function Vector(pack){
-    if (pack.vel === undefined){
-        pack.vel = {x:0, y:0};
+class XYPair {
+    constructor(pack){
+        this.x = pack.x;
+        this.y = pack.y;
     }
-    XYPair.call(this,pack.vel);
+    add(pair){
+        this.x += pair.x;
+        this.y += pair.y;
+    }
+}
+class Position extends XYPair {
+    constructor(pack){
+        super(pack);
+    }
+}
+class Vector extends XYPair {
+    constructor(pack){
+        if (pack.vel === undefined){
+            pack.vel = {x:0, y:0};
+        }
+        super(pack.vel);
+    }
     
-}
-Vector.prototype = Object.create(XYPair.prototype);
-Vector.prototype.getAngle = function(){ return Math.atan2(this.y,this.x);};
-Vector.prototype.getMagnitude = function(){return Math.sqrt(this.x ** 2 + this.y ** 2);};
-Vector.prototype.getXComponent = function(amt=1){return this.x * amt;};
-Vector.prototype.setXComponent = function(x){this.x = x;};
-Vector.prototype.changeXComponent = function(dx){this.x += dx;};
-Vector.prototype.getYComponent = function(amt=1){return this.y * amt;};
-Vector.prototype.setYComponent = function(y){this.y = y;}
-Vector.prototype.changeYComponent = function(dy){this.y += dy;}
-
-Vector.prototype.setAngle = function(ang){
-    const mag = this.getMagnitude();
-    this.x = mag * Math.cos(ang);
-    this.y = mag * Math.sin(ang);
-}
-Vector.prototype.changeAngle = function(da){this.setAngle(this.getAngle() + da);};
-
-Vector.prototype.setMagnitude = function(mag){
-    const ratio = mag / this.getMagnitude();
-    this.x *= ratio;
-    this.y *= ratio;
-}
-Vector.prototype.changeMagnitude = function(dm){this.setMagnitude(this.getMagnitude() + dm);};
-Vector.prototype.setVelocity = function(vec){
-    this.setMagnitude(vector.getMagnitude());
-    this.setAngle(vector.getAngle());
+    
+    get angle(){
+        return Math.atan2(this.y,this.x);
+    }
+    
+    set angle(ang){
+        const mag = this.magnitude;
+        this.x = mag * Math.cos(ang);
+        this.y = mag * Math.sin(ang);
+    }
+    
+    get magnitude(){
+        return Math.sqrt(this.x ** 2 + this.y ** 2);
+    }
+    set magnitude(mag){
+        const ratio = mag / this.magnitude;
+        this.x *= ratio;
+        this.y *= ratio;
+    }
+    copy(vec){
+        this.x = vec.x;
+        this.y = vec.y;
+    }
 }
 
-
-function Shape(pack){
-    this.pos = new Position(pack);
-    this.vel = new Vector(pack);
+class Entity{
+    constructor(pack){
+        this.id = pack.id;
+        this.toRemove = false;
+    }
 }
 
-Shape.prototype.getPos = function(){return this.pos;};
-Shape.prototype.getX = function(){return this.pos.x;};
-Shape.prototype.getY = function(){return this.pos.y;};
-
-Shape.prototype.setPos = function(pos){this.pos = pos;}
-Shape.prototype.setX = function(x){this.pos.x = x;}
-Shape.prototype.setY = function(y){this.pos.y = y;}
-
-Shape.prototype.changeX = function(dx){this.pos.x += dx;}
-Shape.prototype.changeY = function(dy){this.pos.y += dy;}
-
-function Rect(pack){
-    Shape.call(this,pack);
-    this.w = pack.w;
-    this.h = pack.h;
-    this.col = pack.col || 'black';
+class Shape extends Entity{
+    constructor(pack){
+        super(pack);
+        this.pos = new Position(pack);
+        this.vel = new Vector(pack);
+        this.col = pack.col || 'black';
+    }
+    get x(){
+        return this.pos.x;
+    }
+    get y(){
+        return this.pos.y;
+    }
+    set x(val){
+        this.pos.x = val;
+    }
+    set y(val){
+        this.pos.y = val;
+    }
 }
-Rect.prototype = Object.create(Shape.prototype);
-
-function Circle(pack){
-    Shape.call(this,pack);
-    this.r = pack.r;
-    this.col = pack.col;
+class Rect extends Shape{
+    constructor(pack){
+        super(pack);
+        this.w = pack.w;
+        this.h = pack.h;
+    }
 }
-Circle.prototype = Object.create(Shape.prototype);
-
+class Circle extends Shape{
+    constructor(pack){
+        super(pack);
+        this.r = pack.r;
+    }
+}
 exports.XYPair = XYPair;
 exports.Position = Position;
 exports.Vector = Vector;
+exports.Entity = Entity;
 exports.Shape = Shape;
 exports.Rect = Rect;
 exports.Circle = Circle;

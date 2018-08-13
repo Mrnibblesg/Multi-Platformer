@@ -1,52 +1,71 @@
-function XYPair(pack){
-    this.x = pack.x;
-    this.y = pack.y;
-}
-
-//x and y as a position
-function Position(pack){
-    XYPair.call(this,pack);
-}
-
-function Shape(pack){
-    this.pos = new Position(pack);
-    
-    this.setPos = function(pos){this.pos = pos;}
-    this.getPos = function(){return this.pos;}
-    this.getX = function(){return this.pos.x;}
-    this.getY = function(){return this.pos.y;}
-}
-
-function Rect(pack){
-    Shape.call(this,pack);
-    this.w = pack.w;
-    this.h = pack.h;
-    this.col = pack.col || 'black';
-    
-    this.draw = function(){
-        
+class XYPair{
+    constructor(pack){
+        this.x = pack.x;
+        this.y = pack.y;
+    }
+    add(pair){
+        this.x += pair.x;
+        this.y += pair.y;
     }
 }
-function Circle(pack){
-    Shape.call(this,pack);
-    this.r = pack.r;
-    this.col = pack.col;
-    
-    this.draw = function(){
-        
+class Position extends XYPair{
+    constructor(pack){
+        super(pack);
     }
 }
+class Entity{
+    constructor(pack){
+        this.id = pack.id;
+    }
+}
+class Shape extends Entity{
+    constructor(pack){
+        super(pack);
+        this.pos = new Position(pack.pos);
+    }
+    set x(value){
+        this.pos.x = value;
+    }
+    set y(value){
+        this.pos.y = value;
+    }
+    get x(){
+        return this.pos.x;
+    }
+    get y(){
+        return this.pos.y;
+    }
+}
+class Rect extends Shape{
+    constructor(pack){
+        console.log(pack);
+        super(pack);
+        this.w = pack.w;
+        this.h = pack.h;
+        this.col = pack.col || 'black';
+    }
+    
+}
+class Circle extends Shape{
+    constructor(pack){
+        super(pack);
+        this.r = pack.r;
+    }
+}
+
 //THIS NEEDS TO BE MADE BETTER
-function Text(pack){
-    Shape.call(this,pack);
-    this.msg = pack.msg,
-    this.font = pack.font,
-    this.col = pack.col;
-    
-    this.follow = function(obj,offset){
-        this.setPos({
-            x: obj.getX() + offset.x,
-            y: obj.getY() + offset.y
-        });
+class Text extends Shape{
+    constructor(pack){
+        pack.pos = {x:0,y:0};
+        super(pack);
+        this.msg = pack.msg;
+        this.font = pack.font;
+        this.col = pack.col;
+    }
+    follow(obj, offset){
+        this.pos = {
+            x: obj.x + offset.x,
+            y: obj.y + offset.y
+        };
     }
 }
