@@ -22,6 +22,7 @@ const loader = require('./Server/LevelData/levelLoader');
 
 listManager.addList('platforms');
 listManager.addList('players');
+listManager.addList('spawnpoints');
 
 const DEBUG = false;
 const FPS = 60;

@@ -8,6 +8,10 @@ class XYPair {
         this.x += pair.x;
         this.y += pair.y;
     }
+    copy(obj){
+        this.x = obj.x;
+        this.y = obj.y;
+    }
 }
 class Position extends XYPair {
     constructor(pack){
@@ -41,10 +45,7 @@ class Vector extends XYPair {
         this.x *= ratio;
         this.y *= ratio;
     }
-    copy(vec){
-        this.x = vec.x;
-        this.y = vec.y;
-    }
+    
 }
 
 class Entity{

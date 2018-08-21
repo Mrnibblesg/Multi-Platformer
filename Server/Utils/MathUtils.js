@@ -4,6 +4,9 @@ function rand(max,min=0){
 function chooseRand(a){
     return a[Math.floor(this.rand(a.length))];
 }
+function chooseRandProp(obj){
+    return obj[this.chooseRand(Object.keys(obj))];
+}
 function min(a){
     if (a.length === 1){return a[0];}
     const min = a[0];
@@ -50,6 +53,7 @@ function inRange(val, min, max){
 
 exports.rand = rand;
 exports.chooseRand = chooseRand;
+exports.chooseRandProp = chooseRandProp;
 exports.min = min;
 exports.max = max;
 exports.average = average;

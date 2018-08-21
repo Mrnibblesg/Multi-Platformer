@@ -3,6 +3,11 @@ function addList(type){
         this.allLists[type] = {};
     }
 }
+function addArray(type){
+    if (this.allLists[type] === undefined){
+        this.allLists[type] = [];
+    }
+}
 function addToList(type,item){
     this.allLists[type][item.id] = item;
 }

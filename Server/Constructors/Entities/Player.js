@@ -4,6 +4,7 @@ const controls = require('../../Libraries/ControlFunctions');
 const shape = require('../Shapes');
 const packManager = require('../../Engine/packManager');
 const listManager = require('../../Engine/listManager');
+
 class Player extends shape.Rect{
     constructor(pack){
         super(pack);
@@ -75,10 +76,9 @@ class Player extends shape.Rect{
         this.x += vel.x;
         this.y += vel.y;
         
-        //turn into respawn function
         if (this.y > 3000){
-            this.x = 385;
-            this.y = 650;
+            //Choose random spawnpoint to respawn from
+            this.respawn(mathUtils.chooseRandProp(listManager.getList('spawnpoints')));
         }
     }
     updateCollision(platformList){
@@ -167,6 +167,9 @@ class Player extends shape.Rect{
             this.canExtraJump = false;
             this.vel.y = -12;
         }
+    }
+    respawn(spawnpoint){
+        spawnpoint.spawn(this);
     }
     get initPack(){
         return {
